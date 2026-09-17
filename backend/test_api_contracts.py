@@ -60,6 +60,36 @@ def run_tests():
     status = "PASSED" if response.status_code == 200 else "FAILED"
     results.append(("POST /api/trends/fishing-productivity", status, response.status_code, response.json() if status=="PASSED" else response.text))
 
+    # Test 10: POST /api/sar/create
+    response = client.post("/api/sar/create", json={"object_type": "capsized_hull", "people_count": 4, "last_known_lat": 19.1, "last_known_lon": 72.8, "vessel_id": "V123"})
+    status = "PASSED" if response.status_code == 200 else "FAILED"
+    results.append(("POST /api/sar/create", status, response.status_code, response.json() if status=="PASSED" else response.text))
+
+    # Test 11: POST /api/sar/location
+    response = client.post("/api/sar/location", json={"lat": 19.1, "lon": 72.8, "accuracy": 10.0, "source": "gps"})
+    status = "PASSED" if response.status_code == 200 else "FAILED"
+    results.append(("POST /api/sar/location", status, response.status_code, response.json() if status=="PASSED" else response.text))
+
+    # Test 12: POST /api/sar/predict-drift
+    response = client.post("/api/sar/predict-drift", json={"incident_id": "sar-uuid-1234"})
+    status = "PASSED" if response.status_code == 200 else "FAILED"
+    results.append(("POST /api/sar/predict-drift", status, response.status_code, response.json() if status=="PASSED" else response.text))
+
+    # Test 13: GET /api/sar/{id}
+    response = client.get("/api/sar/sar-uuid-1234")
+    status = "PASSED" if response.status_code == 200 else "FAILED"
+    results.append(("GET /api/sar/{id}", status, response.status_code, response.json() if status=="PASSED" else response.text))
+
+    # Test 14: GET /api/sar/{id}/search-zones
+    response = client.get("/api/sar/sar-uuid-1234/search-zones")
+    status = "PASSED" if response.status_code == 200 else "FAILED"
+    results.append(("GET /api/sar/{id}/search-zones", status, response.status_code, response.json() if status=="PASSED" else response.text))
+
+    # Test 15: POST /api/sar/{id}/brief
+    response = client.post("/api/sar/sar-uuid-1234/brief")
+    status = "PASSED" if response.status_code == 200 else "FAILED"
+    results.append(("POST /api/sar/{id}/brief", status, response.status_code, response.json() if status=="PASSED" else response.text))
+
     print("\n[ RESULTS ]")
     print(f"{'ENDPOINT':<40} | {'STATUS':<8} | {'CODE'}")
     print("-" * 65)

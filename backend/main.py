@@ -19,9 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount Sangeeta's and Yug's existing services
-app.include_router(sangeeta_router)
-
 # ============================================================
 # Database connection stub (Day 4)
 # ============================================================
@@ -177,13 +174,81 @@ def get_data_sources_status():
         ]
     }
 
-class SARCreateGatewayRequest(BaseModel):
-    latitude: float
-    longitude: float
+class SARIncidentCreate(BaseModel):
+    object_type: str
+    people_count: int
+    last_known_lat: float
+    last_known_lon: float
+    vessel_id: str
+
+class SARLocationUpdate(BaseModel):
+    lat: float
+    lon: float
+    accuracy: float
+    source: str
+
+class SARDriftPredictRequest(BaseModel):
+    incident_id: str
 
 @app.post("/api/sar/create")
-def create_sar_incident_gateway(request: SARCreateGatewayRequest):
-    """
-    Gateway shell for SAR Create.
-    """
-    return {"status": "gateway shell not fully implemented"}
+def create_sar_incident(request: SARIncidentCreate):
+    return {
+        "status": "success",
+        "incident_id": "sar-uuid-1234",
+        "initial_status": "search_active"
+    }
+
+@app.post("/api/sar/location")
+def update_sar_location(request: SARLocationUpdate):
+    return {"status": "success", "message": "Location updated"}
+
+@app.post("/api/sar/predict-drift")
+def predict_sar_drift(request: SARDriftPredictRequest):
+    return {
+        "status": "success",
+        "incident_id": request.incident_id,
+        "search_zones": [
+            {"zone": "A", "probability": 0.78, "priority": 1},
+            {"zone": "B", "probability": 0.61, "priority": 2},
+            {"zone": "C", "probability": 0.34, "priority": 3}
+        ],
+        "uncertainty_radius_m": 2400
+    }
+
+@app.get("/api/sar/{id}")
+def get_sar_incident(id: str):
+    return {
+        "status": "success",
+        "incident_id": id,
+        "object_type": "capsized_hull",
+        "people_count": 4,
+        "vessel_id": "MH01AB1234",
+        "last_known_lat": 19.1136,
+        "last_known_lon": 72.8090,
+        "severity": "critical"
+    }
+
+@app.get("/api/sar/{id}/search-zones")
+def get_sar_search_zones(id: str):
+    return {
+        "status": "success",
+        "incident_id": id,
+        "sar_search_zones": [
+            {"zone": "A", "probability": 0.78, "priority": 1, "recommended_action": "Deploy nearest"},
+            {"zone": "B", "probability": 0.61, "priority": 2, "recommended_action": "Secondary sweep"},
+            {"zone": "C", "probability": 0.34, "priority": 3, "recommended_action": "Extend search"}
+        ]
+    }
+
+@app.post("/api/sar/{id}/brief")
+def generate_sar_brief(id: str):
+    return {
+        "status": "success",
+        "incident_id": id,
+        "brief_url": f"https://orca.gov.in/brief/{id}.pdf",
+        "geojson_url": f"https://orca.gov.in/brief/{id}.geojson"
+    }
+
+# Finally mount Sangeeta's and Yug's existing services
+# This ensures Gateway mock endpoints take precedence!
+app.include_router(sangeeta_router)
